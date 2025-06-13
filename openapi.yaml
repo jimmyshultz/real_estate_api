@@ -1,0 +1,317 @@
+openapi: 3.0.0
+info:
+  title: Real Estate Intelligence API
+  description: |
+    Multi-source real estate data aggregation API for investment analysis and market research.
+    
+    ## Features
+    - Comprehensive property analysis by ZIP code
+    - Investment scoring and grading system
+    - Market trend analysis
+    - Multi-property comparison
+    - HUD Fair Market Rent calculations
+    
+    ## Data Sources
+    - US Census Bureau American Community Survey (ACS)
+    - HUD Fair Market Rent calculations
+    - Proprietary investment algorithms
+    
+    ## Use Cases
+    - Real estate investment analysis
+    - Property comparison tools
+    - Market research applications
+    - Investment platform integration
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@realestateintelligence.com
+  license:
+    name: Commercial
+    url: https://rapidapi.com/real-estate-intelligence-api
+
+servers:
+  - url: https://your-deployed-app.herokuapp.com
+    description: Production Server
+  - url: http://127.0.0.1:5000
+    description: Development Server
+
+security:
+  - RapidAPIKey: []
+
+paths:
+  /health:
+    get:
+      summary: Health Check
+      description: Check API health and status
+      tags:
+        - System
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
+                  timestamp:
+                    type: string
+                    format: date-time
+                  version:
+                    type: string
+                    example: "1.0.0"
+                  platform:
+                    type: string
+                    example: "RapidAPI"
+
+  /docs:
+    get:
+      summary: API Documentation
+      description: Get comprehensive API documentation and usage guide
+      tags:
+        - System
+      responses:
+        '200':
+          description: API documentation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  api_name:
+                    type: string
+                  version:
+                    type: string
+                  endpoints:
+                    type: object
+                  rate_limits:
+                    type: object
+                  pricing:
+                    type: object
+
+  /property/analysis/{zip_code}:
+    get:
+      summary: Property Analysis
+      description: Get comprehensive property analysis for a ZIP code including demographics, investment scoring, and market data
+      tags:
+        - Property Analysis
+      parameters:
+        - name: zip_code
+          in: path
+          required: true
+          description: 5-digit ZIP code
+          schema:
+            type: string
+            pattern: '^[0-9]{5}$'
+            example: "90210"
+        - name: year
+          in: query
+          required: false
+          description: Census data year (default: 2023)
+          schema:
+            type: string
+            example: "2023"
+      responses:
+        '200':
+          description: Property analysis data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  zip_code:
+                    type: string
+                  year:
+                    type: string
+                  demographics:
+                    type: object
+                    properties:
+                      median_home_value:
+                        type: integer
+                      median_rent:
+                        type: integer
+                      median_household_income:
+                        type: integer
+                      total_housing_units:
+                        type: integer
+                      owner_occupied:
+                        type: integer
+                      renter_occupied:
+                        type: integer
+                  investment_analysis:
+                    type: object
+                    properties:
+                      investment_score:
+                        type: integer
+                        minimum: 0
+                        maximum: 100
+                      investment_grade:
+                        type: string
+                        enum: [A, B, C, D, F]
+                      score_factors:
+                        type: object
+                  market_data:
+                    type: object
+                    properties:
+                      fair_market_rent_1br:
+                        type: integer
+                      fair_market_rent_2br:
+                        type: integer
+                      fair_market_rent_3br:
+                        type: integer
+                  response_time_ms:
+                    type: integer
+        '400':
+          description: Invalid ZIP code format
+        '404':
+          description: No data available for ZIP code
+        '429':
+          description: Rate limit exceeded
+        '500':
+          description: Internal server error
+
+  /property/compare:
+    post:
+      summary: Compare Properties
+      description: Compare multiple ZIP codes side-by-side for investment analysis
+      tags:
+        - Property Analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - zip_codes
+              properties:
+                zip_codes:
+                  type: array
+                  items:
+                    type: string
+                    pattern: '^[0-9]{5}$'
+                  minItems: 1
+                  maxItems: 10
+                  example: ["90210", "10001", "33101"]
+      responses:
+        '200':
+          description: Property comparison results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  comparison_results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        zip_code:
+                          type: string
+                        investment_score:
+                          type: integer
+                        investment_grade:
+                          type: string
+                        median_home_value:
+                          type: integer
+                        median_rent:
+                          type: integer
+                        median_household_income:
+                          type: integer
+                  best_investment:
+                    type: object
+                  comparison_date:
+                    type: string
+                    format: date-time
+        '400':
+          description: Invalid request (too many ZIP codes or invalid format)
+        '429':
+          description: Rate limit exceeded
+        '500':
+          description: Internal server error
+
+  /market/trends/{zip_code}:
+    get:
+      summary: Market Trends
+      description: Get historical market trends and projections for a ZIP code
+      tags:
+        - Market Trends
+      parameters:
+        - name: zip_code
+          in: path
+          required: true
+          description: 5-digit ZIP code
+          schema:
+            type: string
+            pattern: '^[0-9]{5}$'
+            example: "90210"
+      responses:
+        '200':
+          description: Market trend analysis
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  zip_code:
+                    type: string
+                  trend_analysis:
+                    type: object
+                    properties:
+                      price_appreciation_1yr:
+                        type: number
+                      rent_growth_1yr:
+                        type: number
+                      trend_direction:
+                        type: string
+                        enum: [up, down, stable]
+                      market_momentum:
+                        type: string
+                        enum: [strong, moderate, weak]
+                  historical_data:
+                    type: array
+                  analysis_date:
+                    type: string
+                    format: date-time
+        '404':
+          description: Insufficient historical data
+        '429':
+          description: Rate limit exceeded
+        '500':
+          description: Internal server error
+
+components:
+  securitySchemes:
+    RapidAPIKey:
+      type: apiKey
+      name: X-RapidAPI-Key
+      in: header
+    RapidAPIHost:
+      type: apiKey
+      name: X-RapidAPI-Host
+      in: header
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        zip_code:
+          type: string
+        suggestions:
+          type: array
+          items:
+            type: string
+
+tags:
+  - name: System
+    description: System endpoints for health checks and documentation
+  - name: Property Analysis
+    description: Property analysis and comparison endpoints
+  - name: Market Trends
+    description: Market trend analysis endpoints 

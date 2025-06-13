@@ -1,0 +1,37 @@
+{
+  "version": 2,
+  "functions": {
+    "api/index.py": {
+      "runtime": "python3.9"
+    }
+  },
+  "routes": [
+    {
+      "src": "/health",
+      "dest": "/api/index.py"
+    },
+    {
+      "src": "/docs",
+      "dest": "/api/index.py"
+    },
+    {
+      "src": "/property/analysis/(.*)",
+      "dest": "/api/index.py"
+    },
+    {
+      "src": "/property/compare",
+      "dest": "/api/index.py"
+    },
+    {
+      "src": "/market/trends/(.*)",
+      "dest": "/api/index.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/api/index.py"
+    }
+  ],
+  "env": {
+    "CENSUS_API_KEY": "@census_api_key"
+  }
+} 
