@@ -282,6 +282,195 @@ paths:
         '500':
           description: Internal server error
 
+  /property/enhanced/{zip_code}:
+    get:
+      summary: Enhanced Property Analysis
+      description: Get enhanced property analysis with additional demographic and economic metrics
+      tags:
+        - Property Analysis
+      parameters:
+        - name: zip_code
+          in: path
+          required: true
+          description: 5-digit ZIP code
+          schema:
+            type: string
+            pattern: '^[0-9]{5}$'
+            example: "90210"
+        - name: year
+          in: query
+          required: false
+          description: Census data year (defaults to most recent available)
+          schema:
+            type: string
+            example: "2023"
+      responses:
+        '200':
+          description: Enhanced property analysis data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  zip_code:
+                    type: string
+                  enhanced_demographics:
+                    type: object
+                  economic_indicators:
+                    type: object
+                  investment_analysis:
+                    type: object
+                  response_time_ms:
+                    type: integer
+
+  /market/comparables/{zip_code}:
+    get:
+      summary: Market Comparables
+      description: Get market comparable analysis for nearby properties
+      tags:
+        - Market Analysis
+      parameters:
+        - name: zip_code
+          in: path
+          required: true
+          description: 5-digit ZIP code
+          schema:
+            type: string
+            pattern: '^[0-9]{5}$'
+            example: "90210"
+        - name: radius
+          in: query
+          required: false
+          description: Search radius in miles (default 10, max 50)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            example: 10
+      responses:
+        '200':
+          description: Market comparables data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  target_zip_code:
+                    type: string
+                  comparable_count:
+                    type: integer
+                  market_statistics:
+                    type: object
+                  comparables:
+                    type: array
+
+  /investment/score/{zip_code}:
+    get:
+      summary: Investment Score
+      description: Get quick investment score and grade for a ZIP code
+      tags:
+        - Investment Analysis
+      parameters:
+        - name: zip_code
+          in: path
+          required: true
+          description: 5-digit ZIP code
+          schema:
+            type: string
+            pattern: '^[0-9]{5}$'
+            example: "90210"
+      responses:
+        '200':
+          description: Investment score and grade
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  zip_code:
+                    type: string
+                  investment_score:
+                    type: integer
+                  investment_grade:
+                    type: string
+                  score_factors:
+                    type: object
+                  quick_stats:
+                    type: object
+
+  /market/economic-health/{zip_code}:
+    get:
+      summary: Economic Health Analysis
+      description: Get detailed economic health indicators for an area
+      tags:
+        - Market Analysis
+      parameters:
+        - name: zip_code
+          in: path
+          required: true
+          description: 5-digit ZIP code
+          schema:
+            type: string
+            pattern: '^[0-9]{5}$'
+            example: "90210"
+      responses:
+        '200':
+          description: Economic health indicators
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  zip_code:
+                    type: string
+                  economic_indicators:
+                    type: object
+                  overall_economic_health:
+                    type: object
+
+  /batch/investment-scores:
+    post:
+      summary: Batch Investment Scores
+      description: Get investment scores for multiple ZIP codes in batch
+      tags:
+        - Investment Analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                zip_codes:
+                  type: array
+                  items:
+                    type: string
+                    pattern: '^[0-9]{5}$'
+                  minItems: 1
+                  maxItems: 25
+                  example: ["90210", "10001", "33101"]
+      responses:
+        '200':
+          description: Batch investment analysis results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  batch_analysis:
+                    type: object
+                    properties:
+                      successful_analyses:
+                        type: integer
+                      failed_analyses:
+                        type: integer
+                      results:
+                        type: array
+                      failures:
+                        type: array
+                  top_investment:
+                    type: object
+
 components:
   securitySchemes:
     RapidAPIKey:
@@ -314,4 +503,8 @@ tags:
   - name: Property Analysis
     description: Property analysis and comparison endpoints
   - name: Market Trends
-    description: Market trend analysis endpoints 
+    description: Market trend analysis endpoints
+  - name: Market Analysis
+    description: Market analysis and comparables endpoints
+  - name: Investment Analysis
+    description: Investment scoring and batch analysis endpoints 
