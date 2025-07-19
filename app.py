@@ -59,7 +59,7 @@ def require_rapidapi_key(f):
         rapidapi_host = request.headers.get('X-RapidAPI-Host')
         
         # For development/testing
-        if not rapidapi_key and request.remote_addr in ['127.0.0.1', 'localhost']:
+        if not rapidapi_key and request.remote_addr in ['127.0.0.1', '::1']:
             rapidapi_key = os.getenv('DEV_API_KEY', 'dev-testing-key')
         
         if not rapidapi_key:
@@ -264,19 +264,6 @@ class DataSourceManager:
             multiplier = 1.2
         
         return int(base_rent * multiplier)
-    
-    def _safe_int(self, value):
-        """Safely convert value to integer with validation"""
-        try:
-            if value is None or value == '' or value == '-666666666':
-                return None
-            result = int(float(value))
-            # Filter out obviously wrong values
-            if result < 0 or result > 10000000:  # Reasonable bounds
-                return None
-            return result
-        except (ValueError, TypeError):
-            return None
 
     @lru_cache(maxsize=500)
     def get_enhanced_demographics(self, zip_code: str, year: str = "2023") -> Dict:
@@ -318,13 +305,19 @@ class DataSourceManager:
     
     @lru_cache(maxsize=200)
     def get_market_comparables(self, zip_code: str, radius_miles: int = 10) -> Dict:
-        """Get comparable market data from nearby ZIP codes"""
+        """Get comparable market data from nearby ZIP codes
+        
+        Note: This uses a simplified ZIP code proximity approximation.
+        In production, this should be replaced with a proper geographic
+        ZIP code database for accurate geographic proximity matching.
+        """
         try:
-            # Get nearby ZIP codes (simplified approximation)
+            # Get nearby ZIP codes (simplified approximation - not geographically accurate)
+            # TODO: Replace with proper geographic ZIP code lookup
             base_zip = int(zip_code)
             comparable_zips = []
             
-            # Generate nearby ZIP codes
+            # Generate numerically nearby ZIP codes (approximation only)
             for offset in range(-radius_miles, radius_miles + 1):
                 test_zip = str(base_zip + offset).zfill(5)
                 if test_zip != zip_code and test_zip.isdigit():
