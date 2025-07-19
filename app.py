@@ -92,7 +92,7 @@ class DataSourceManager:
     
     def _safe_int(self, value):
         """Safely convert value to integer"""
-        if value is None or value == '' or value == -666666666:
+        if value is None or value == '' or value == -666666666 or value == '-666666666':
             return None
         try:
             return int(float(value))
@@ -101,7 +101,7 @@ class DataSourceManager:
     
     def _safe_float(self, value):
         """Safely convert value to float"""
-        if value is None or value == '' or value == -666666666:
+        if value is None or value == '' or value == -666666666 or value == '-666666666':
             return None
         try:
             return float(value)
