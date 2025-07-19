@@ -19,11 +19,31 @@
       "dest": "/api/index.py"
     },
     {
+      "src": "/property/enhanced/(.*)",
+      "dest": "/api/index.py"
+    },
+    {
       "src": "/property/compare",
       "dest": "/api/index.py"
     },
     {
       "src": "/market/trends/(.*)",
+      "dest": "/api/index.py"
+    },
+    {
+      "src": "/market/comparables/(.*)",
+      "dest": "/api/index.py"
+    },
+    {
+      "src": "/market/economic-health/(.*)",
+      "dest": "/api/index.py"
+    },
+    {
+      "src": "/investment/score/(.*)",
+      "dest": "/api/index.py"
+    },
+    {
+      "src": "/batch/investment-scores",
       "dest": "/api/index.py"
     },
     {
