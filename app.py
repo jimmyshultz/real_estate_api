@@ -5,24 +5,17 @@ Multi-source aggregation wrapper for real estate investment and analysis
 Enhanced with advanced analytics and market intelligence
 """
 
-from flask import Flask, jsonify, request, abort, g
+from flask import Flask, jsonify, request, g
 from flask_cors import CORS
 import requests
 import sqlite3
-import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
+from datetime import datetime
 import logging
 from functools import lru_cache, wraps
-import json
 import time
-from typing import Dict, List, Optional
-import asyncio
-import aiohttp
-from concurrent.futures import ThreadPoolExecutor
+from typing import Dict
 import os
 from dotenv import load_dotenv
-import math
 import statistics
 
 # Load environment variables from .env file
@@ -32,13 +25,18 @@ app = Flask(__name__)
 CORS(app)
 
 # Configuration for RapidAPI
-RAPIDAPI_HOST = os.getenv('RAPIDAPI_HOST', 'real-estate-intelligence-api.p.rapidapi.com')
+RAPIDAPI_HOST = os.getenv(
+    'RAPIDAPI_HOST', 'real-estate-intelligence-api.p.rapidapi.com'
+)
 DATABASE_PATH = os.getenv('DATABASE_PATH', 'real_estate_intelligence.db')
 CENSUS_API_KEY = os.getenv('CENSUS_API_KEY')
 
 # Validate that Census API key is available
 if not CENSUS_API_KEY:
-    raise ValueError("CENSUS_API_KEY not found in environment variables. Please set it in your .env file.")
+    raise ValueError(
+        "CENSUS_API_KEY not found in environment variables. "
+        "Please set it in your .env file."
+    )
 
 # Enhanced rate limiting configuration
 RATE_LIMITS = {
@@ -62,7 +60,7 @@ def require_rapidapi_key(f):
         
         # For development/testing
         if not rapidapi_key and request.remote_addr in ['127.0.0.1', 'localhost']:
-            rapidapi_key = 'development-key'
+            rapidapi_key = os.getenv('DEV_API_KEY', 'dev-testing-key')
         
         if not rapidapi_key:
             return jsonify({'error': 'RapidAPI key required'}), 401
@@ -74,7 +72,8 @@ def require_rapidapi_key(f):
         # Log usage for analytics
         try:
             log_rapidapi_usage(rapidapi_key, request.endpoint)
-        except:
+        except Exception as e:
+            logger.warning(f"Failed to log usage: {str(e)}")
             pass  # Don't fail if logging fails
         
         return f(*args, **kwargs)
@@ -83,6 +82,7 @@ def require_rapidapi_key(f):
 # Enhanced DataSourceManager with additional data sources
 class DataSourceManager:
     def __init__(self):
+        self.census_base_url = "https://api.census.gov/data"
         self.session = requests.Session()
         self.session.headers.update({
             'User-Agent': 'RealEstateIntelligenceAPI/1.0'
@@ -108,7 +108,8 @@ class DataSourceManager:
 
     @lru_cache(maxsize=500)
     def get_census_demographics(self, zip_code: str, year: str = "2023") -> Dict:
-        """Get demographics data from Census Bureau API with auto-detection of latest available year"""
+        """Get demographics data from Census Bureau API with auto-detection 
+        of latest available year"""
         # Try years in order of preference (most recent first)
         years_to_try = [year, "2023", "2022", "2021", "2020"]
         
@@ -120,7 +121,10 @@ class DataSourceManager:
                 url = f"{self.census_base_url}/{try_year}/acs/acs5"
                 
                 params = {
-                    'get': 'B25001_001E,B25003_001E,B25003_002E,B25003_003E,B25064_001E,B25077_001E,B08303_001E,B19013_001E,B25002_001E',
+                    'get': (
+                        'B25001_001E,B25003_001E,B25003_002E,B25003_003E,'
+                        'B25064_001E,B25077_001E,B08303_001E,B19013_001E,B25002_001E'
+                    ),
                     'for': f'zip code tabulation area:{zip_code}',
                     'key': CENSUS_API_KEY
                 }

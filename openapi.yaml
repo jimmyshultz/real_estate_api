@@ -109,7 +109,7 @@ paths:
         - name: year
           in: query
           required: false
-          description: Census data year (default: 2023)
+          description: "Census data year (default: 2023)"
           schema:
             type: string
             example: "2023"
